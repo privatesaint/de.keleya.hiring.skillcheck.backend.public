@@ -30,10 +30,16 @@ export class UserService {
    * @returns User
    */
   async findUnique(whereUnique: Prisma.UserWhereUniqueInput, includeCredentials = false) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: whereUnique,
       include: { credentials: includeCredentials },
     });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 
   /**
@@ -108,7 +114,7 @@ export class UserService {
 
     const token = this.jwtService.sign({
       id: user.id,
-      is_staff: user.is_admin,
+      username: user.email,
     });
 
     return { token };

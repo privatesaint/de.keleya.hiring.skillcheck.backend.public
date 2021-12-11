@@ -12,6 +12,7 @@ import {
   HttpCode,
   UseGuards,
   NotImplementedException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
@@ -20,6 +21,8 @@ import { DeleteUserDto } from './dto/delete-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/currentUser';
 
 @Controller('user')
 export class UserController {
@@ -31,8 +34,13 @@ export class UserController {
   }
 
   @Get(':id')
-  async findUnique(@Param('id', ParseIntPipe) id, @Req() req: Request) {
-    throw new NotImplementedException();
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async findUnique(@Param('id', ParseIntPipe) id, @Req() req: Request, @CurrentUser() user) {
+    if (!user.is_admin && user.id !== id) {
+      throw new UnauthorizedException();
+    }
+    return this.usersService.findUnique({ id });
   }
 
   @Post()
