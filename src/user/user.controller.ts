@@ -37,7 +37,7 @@ export class UserController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    throw new NotImplementedException();
+    return this.usersService.create(createUserDto);
   }
 
   @Patch()

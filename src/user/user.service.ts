@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { hashPassword } from '../common/utils/password';
 
 @Injectable()
 export class UserService {
@@ -29,7 +30,10 @@ export class UserService {
    * @returns User
    */
   async findUnique(whereUnique: Prisma.UserWhereUniqueInput, includeCredentials = false) {
-    throw new NotImplementedException();
+    return this.prisma.user.findUnique({
+      where: whereUnique,
+      include: { credentials: includeCredentials },
+    });
   }
 
   /**
@@ -39,7 +43,21 @@ export class UserService {
    * @returns result of create
    */
   async create(createUserDto: CreateUserDto) {
-    throw new NotImplementedException();
+    const hashedPassword = await hashPassword(createUserDto.password);
+
+    return this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        is_admin: createUserDto.is_admin,
+
+        credentials: {
+          create: {
+            hash: hashedPassword,
+          },
+        },
+      },
+    });
   }
 
   /**
