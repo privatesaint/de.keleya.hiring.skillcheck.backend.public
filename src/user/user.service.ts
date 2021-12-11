@@ -121,7 +121,18 @@ export class UserService {
    * @returns true or false
    */
   async authenticate(authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    const user = await this.prisma.user.findUnique({
+      where: { email: authenticateUserDto.email },
+      include: { credentials: true },
+    });
+
+    if (!user.credentials) {
+      throw new UnauthorizedException();
+    }
+
+    const checkedPassword = await matchHashedPassword(authenticateUserDto.password, user.credentials.hash);
+
+    return { credentials: checkedPassword };
   }
 
   /**

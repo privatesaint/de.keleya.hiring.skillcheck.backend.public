@@ -56,11 +56,13 @@ export class UserController {
   }
 
   @Post('authenticate')
+  @HttpCode(200)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    return this.usersService.authenticate(authenticateUserDto);
   }
 
   @Post('token')
+  @HttpCode(200)
   async userGetToken(@Body() authenticateUserDto: AuthenticateUserDto) {
     return this.usersService.authenticateAndGetJwtToken(authenticateUserDto);
   }
