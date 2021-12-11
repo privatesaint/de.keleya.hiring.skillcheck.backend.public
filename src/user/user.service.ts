@@ -96,7 +96,7 @@ export class UserService {
       include: { credentials: true },
     });
 
-    if (!user.credentials) {
+    if (!user || !user.credentials) {
       throw new NotFoundException();
     }
 
@@ -126,8 +126,8 @@ export class UserService {
       include: { credentials: true },
     });
 
-    if (!user.credentials) {
-      throw new UnauthorizedException();
+    if (!user || !user.credentials) {
+      throw new NotFoundException();
     }
 
     const checkedPassword = await matchHashedPassword(authenticateUserDto.password, user.credentials.hash);

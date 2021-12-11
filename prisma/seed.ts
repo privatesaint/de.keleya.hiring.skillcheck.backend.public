@@ -23,7 +23,7 @@ async function main() {
     },
     {
       name: 'John doe',
-      email: 'john@test.co',
+      email: 'mamaUser@fake-mail.com',
       email_confirmed: true,
       is_admin: false,
 
