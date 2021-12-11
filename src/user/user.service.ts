@@ -142,6 +142,12 @@ export class UserService {
    * @returns the decoded token if valid
    */
   async validateToken(token: string) {
-    throw new NotImplementedException();
+    try {
+      await this.jwtService.verifyAsync(token);
+
+      return { valid: true };
+    } catch (e) {
+      return { valid: false };
+    }
   }
 }

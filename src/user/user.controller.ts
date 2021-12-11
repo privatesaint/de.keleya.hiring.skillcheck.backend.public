@@ -52,8 +52,11 @@ export class UserController {
   }
 
   @Post('validate')
+  @HttpCode(200)
   async userValidateToken(@Req() req: Request) {
-    throw new NotImplementedException();
+    const token = req.headers['authorization'].split(' ')[1];
+
+    return this.usersService.validateToken(token);
   }
 
   @Post('authenticate')
