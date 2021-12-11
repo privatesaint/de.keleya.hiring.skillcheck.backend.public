@@ -1,4 +1,4 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException, NotImplementedException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.services';
@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { hashPassword } from '../common/utils/password';
+import { hashPassword, matchHashedPassword } from '../common/utils/password';
 
 @Injectable()
 export class UserService {
@@ -91,7 +91,27 @@ export class UserService {
    * @returns a JWT token
    */
   async authenticateAndGetJwtToken(authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    const user = await this.prisma.user.findUnique({
+      where: { email: authenticateUserDto.email },
+      include: { credentials: true },
+    });
+
+    if (!user.credentials) {
+      throw new NotFoundException();
+    }
+
+    const checkedPassword = await matchHashedPassword(authenticateUserDto.password, user.credentials.hash);
+
+    if (!checkedPassword) {
+      throw new UnauthorizedException();
+    }
+
+    const token = this.jwtService.sign({
+      id: user.id,
+      is_staff: user.is_admin,
+    });
+
+    return { token };
   }
 
   /**
