@@ -55,8 +55,13 @@ export class UserController {
   }
 
   @Delete()
-  async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request, @CurrentUser() user) {
+    if (!user.is_admin && user.id !== deleteUserDto.id) {
+      throw new UnauthorizedException();
+    }
+    return this.usersService.delete(deleteUserDto);
   }
 
   @Post('validate')

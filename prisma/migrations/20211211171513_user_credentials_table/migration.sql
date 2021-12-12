@@ -2,7 +2,7 @@
 CREATE TABLE "users" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "email_confirmed" BOOLEAN DEFAULT false,
     "is_admin" BOOLEAN DEFAULT false,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

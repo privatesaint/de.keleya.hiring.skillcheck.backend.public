@@ -87,7 +87,24 @@ export class UserService {
    * @returns results of users and credentials table modification
    */
   async delete(deleteUserDto: DeleteUserDto) {
-    throw new NotImplementedException();
+    const user = await this.findUnique({ id: deleteUserDto.id });
+
+    if (user.name === '(deleted)') {
+      throw new NotFoundException();
+    }
+
+    const deletedUser = await this.prisma.user.update({
+      where: { id: deleteUserDto.id },
+      data: {
+        name: '(deleted)',
+        email: null,
+        credentials: {
+          delete: true,
+        },
+      },
+    });
+
+    return { users: deletedUser };
   }
 
   /**
