@@ -50,8 +50,17 @@ export class UserController {
   }
 
   @Patch()
-  async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request, @CurrentUser() user) {
+    if (
+      (!user.is_admin && user.id !== updateUserDto.id) ||
+      ((updateUserDto.email || updateUserDto.password) && user.id !== updateUserDto.id)
+    ) {
+      throw new UnauthorizedException();
+    }
+
+    return this.usersService.update(updateUserDto);
   }
 
   @Delete()

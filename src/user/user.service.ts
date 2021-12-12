@@ -73,7 +73,39 @@ export class UserService {
    * @returns result of update
    */
   async update(updateUserDto: UpdateUserDto) {
-    throw new NotImplementedException();
+    const user = await this.findUnique({ id: updateUserDto.id });
+
+    if (user.name === '(deleted)') {
+      throw new NotFoundException();
+    }
+
+    let data;
+    data = {
+      name: updateUserDto.name,
+      email: updateUserDto.email,
+      email_confirmed: updateUserDto.email_confirmed,
+      is_admin: updateUserDto.is_admin,
+    };
+
+    if (updateUserDto.password) {
+      const hashedPassword = await hashPassword(updateUserDto.password);
+      data.credentials = {
+        update: {
+          hash: hashedPassword,
+        },
+      };
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: updateUserDto.id },
+      data,
+    });
+
+    return {
+      ...updatedUser,
+      createdAt: updatedUser.created_at,
+      updatedAt: updatedUser.updated_at,
+    };
   }
 
   /**
