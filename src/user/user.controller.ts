@@ -11,7 +11,6 @@ import {
   Req,
   HttpCode,
   UseGuards,
-  NotImplementedException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -29,15 +28,25 @@ export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Get()
-  async find(@Query() findUserDto: FindUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async find(@Query() findUserDto: FindUserDto, @Req() req: Request, @CurrentUser() user) {
+    if (!user.is_admin) {
+      return [user];
+    }
+
+    if (!user.is_admin && user.id !== findUserDto.id) {
+      throw new UnauthorizedException();
+    }
+
+    return this.usersService.find(findUserDto);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async findUnique(@Param('id', ParseIntPipe) id, @Req() req: Request, @CurrentUser() user) {
-    if (!user.is_admin && user.id !== id) {
+    if (user.id !== id) {
       throw new UnauthorizedException();
     }
     return this.usersService.findUnique({ id });

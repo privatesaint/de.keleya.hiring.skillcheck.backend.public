@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, NotImplementedException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.services';
@@ -20,7 +20,54 @@ export class UserService {
    * @returns User[]
    */
   async find(findUserDto: FindUserDto): Promise<User[]> {
-    throw new NotImplementedException();
+    let users;
+
+    let ids = [];
+
+    if (findUserDto.id && Array.isArray(findUserDto.id)) {
+      ids = findUserDto.id.map((id) => Number(id));
+    }
+
+    if (findUserDto.name) {
+      const userIds = await this.prisma.$queryRawUnsafe<{ id: number }[]>(
+        'SELECT id FROM "users" WHERE name LIKE $1',
+        `%${findUserDto.name}%`,
+      );
+      const foundUsers = userIds.map((row) => row.id);
+
+      ids.push(...foundUsers);
+    }
+
+    const query = { where: {}, include: { credentials: false } };
+    if (findUserDto.offset) {
+      query['skip'] = Number(findUserDto.offset);
+    }
+
+    if (findUserDto.limit) {
+      query['take'] = Number(findUserDto.limit);
+    }
+
+    if (findUserDto.email) {
+      query.where['email'] = { equals: findUserDto.email };
+    }
+
+    if (findUserDto.credentials == 'true') {
+      query.include.credentials = true;
+    }
+
+    if (findUserDto.name || findUserDto.id) {
+      typeof findUserDto.id === 'string' && ids.push(Number(findUserDto.id));
+
+      query.where['id'] = { in: ids };
+    }
+
+    if (findUserDto.updatedSince) {
+      query.where['updated_at'] = { gte: new Date(findUserDto.updatedSince) };
+    }
+
+    users = await this.prisma.user.findMany(query);
+
+    return users;
   }
 
   /**
