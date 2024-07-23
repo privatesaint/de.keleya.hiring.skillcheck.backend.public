@@ -68,7 +68,12 @@ Command lines:
 - Import Hiring Backend Test.postman_collection.json into the latest Postman client and run the collection tests. Depending on how you seed your database, some tests may need to be adjusted for ids. Please take a screenshot of the results like this one:
 - ![postman_tests.png](postman_tests.png)
 - Send us this screenshot as well as the export of your postman tests.
-
+- the following should run without errors:
+```
+yarn
+npx migrate reset
+yarn test
+```
 ### Your Notes Below Here
 
 ...
